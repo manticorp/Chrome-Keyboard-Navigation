@@ -1,0 +1,29 @@
+{
+    "manifest_version": 2,
+
+    "name": "Previous and Next page keyboard navigation",
+    "description": "Allows you to navigate any paged website using the left and right keyboard keys.",
+    "version": "0.1",
+    "browser_action": {
+    "default_icon": "icon.png",
+    "default_title": "Toggle Keyboard Navigation"
+    },
+    "permissions": [
+        "storage"
+    ],
+    "background": 
+    {
+        "page": "background.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://*/*"],
+            "js": [
+                "jquery.js",
+                "content_script.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "options_page": "options.html"
+}
