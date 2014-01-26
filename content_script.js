@@ -28,26 +28,30 @@
             var cclass  = $(this).attr('class') || '';
             var id      = $(this).attr('id')    || '';
             var title   = $(this).attr('title') || '';
-            var vars = ["previous", "prev", "Previous", "Prev", "Back", "back"];
+            var vars = [/[^a-zA-Z0-9]?(back|prev|older)[^g]?/i];
             for(var i = 0; i < vars.length; i++){
                 if(
-                    text.search(vars[i])    != -1 || 
+                    (text.search(vars[i])    != -1 || 
                     cclass.search(vars[i])  != -1 || 
                     id.search(vars[i])      != -1 || 
-                    title.search(vars[i])   != -1
+                    title.search(vars[i])   != -1) &&
+                    prev_page === false
                 ){
+                    console.log("Found prev: " + href);
                     prev_page = href;
                     break;
                 }
             }
-            var vars = ["next", "Next", "forward", "Forward", "Forwards", "forwards"];
+            var vars = [/[^a-zA-Z0-9]?(next|forward)[s]?/i];
             for(var i = 0; i < vars.length; i++){
                 if(
-                    text.search(vars[i])    != -1 || 
+                    (text.search(vars[i])    != -1 || 
                     cclass.search(vars[i])  != -1 || 
                     id.search(vars[i])      != -1 || 
-                    title.search(vars[i])   != -1
+                    title.search(vars[i])   != -1) &&
+                    next_page === false
                 ){
+                    console.log("Found next: " + href);
                     next_page = href;
                     break;
                 }
