@@ -27,6 +27,14 @@
             "prev_url" : function(){
                 return $('table#comicnav tbody tr td:nth-child(5) a').attr('href');
             }
+        },
+        "reddit" :{
+            "url": "www.reddit.com",
+            "test": function(){
+                // TODO: Find reliable way of detecting if RES is installed...
+                // return !($('#RESConsole').length); // tests of RES is installed.
+                return false;
+            }
         }
     }
     
@@ -34,13 +42,14 @@
         return url.replace('http://','').replace('https://','').split(/[/?#]/)[0];
     }
     
+    // Checks if the url is one of the special cases above
     function checkIfSpecialCase() {
         var vreturn = false;
         $.each( specialCases, function(index, spec){
             if(spec.url == window.location.host){
                 // We have a special case!
                 vreturn = spec;
-                return false;
+                return false; // break out of each loop
             }
         });
         return vreturn;
@@ -102,9 +111,6 @@
                 }
             }
         }
-        if(prev_page !== false || next_page !== false){
-            setKeypad();
-        }
         
         return {"current": window.location.href.toString(), "next": next_page, "prev": prev_page};
     }
@@ -155,13 +161,25 @@
         isPaused = response.value;
         if(!isPaused) {
             var specialCase = checkIfSpecialCase();
+            var test = true;
             if(specialCase === false){
                 analyse();
             } else {
-                next_page = specialCase.next_url();
-                prev_page = specialCase.prev_url();
-                setKeypad();
+                // Sometimes we need to test for certain things (e.g. if RES is installed)
+                if(typeof specialCase.test !== "undefined"){
+                    test = specialCase.test();
+                }
+                if(test === true){
+                    analyse();
+                    if(typeof specialCase.next_url !== "undefined"){
+                        next_page = specialCase.next_url();
+                    }
+                    if(typeof specialCase.prev_url !== "undefined"){
+                        prev_page = specialCase.prev_url();
+                    }
+                }
             }
+            if(test === true) setKeypad();
         }
     });
 
