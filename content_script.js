@@ -32,9 +32,13 @@
             "url": "www.reddit.com",
             "test": function(){
                 // TODO: Find reliable way of detecting if RES is installed...
-                // return !($('#RESConsole').length); // tests of RES is installed.
+                // return !($('#RESConsole').length); // tests if RES is installed.
                 return false;
             }
+        },
+        "wikipedia" :{
+            "url": "wikipedia.org",
+            "test": function(){return false;}
         }
     }
     
@@ -46,7 +50,7 @@
     function checkIfSpecialCase() {
         var vreturn = false;
         $.each( specialCases, function(index, spec){
-            if(spec.url == window.location.host){
+            if(window.location.host.search(spec.url) != -1){
                 // We have a special case!
                 vreturn = spec;
                 return false; // break out of each loop
