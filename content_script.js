@@ -5,6 +5,7 @@
      */
     if(!Element.prototype.addEventListener){var oListeners={};function runListeners(oEvent){if(!oEvent){oEvent=window.event}for(var lstId=0,elId=0,oEvtListeners=oListeners[oEvent.type];elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){for(lstId;lstId<oEvtListeners.aEvts[elId].length;lstId++){oEvtListeners.aEvts[elId][lstId].call(this,oEvent)}break}}}Element.prototype.addEventListener=function(sEventType,fListener){if(oListeners.hasOwnProperty(sEventType)){var oEvtListeners=oListeners[sEventType];for(var nElIdx=-1,elId=0;elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){nElIdx=elId;break}}if(nElIdx===-1){oEvtListeners.aEls.push(this);oEvtListeners.aEvts.push([fListener]);this["on"+sEventType]=runListeners}else{var aElListeners=oEvtListeners.aEvts[nElIdx];if(this["on"+sEventType]!==runListeners){aElListeners.splice(0);this["on"+sEventType]=runListeners}for(var lstId=0;lstId<aElListeners.length;lstId++){if(aElListeners[lstId]===fListener){return}}aElListeners.push(fListener)}}else{oListeners[sEventType]={aEls:[this],aEvts:[[fListener]]};this["on"+sEventType]=runListeners}};Element.prototype.removeEventListener=function(sEventType,fListener){if(!oListeners.hasOwnProperty(sEventType)){return}var oEvtListeners=oListeners[sEventType];for(var nElIdx=-1,elId=0;elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){nElIdx=elId;break}}if(nElIdx===-1){return}for(var lstId=0,aElListeners=oEvtListeners.aEvts[nElIdx];lstId<aElListeners.length;lstId++){if(aElListeners[lstId]===fListener){aElListeners.splice(lstId,1)}}}}
 
+    var _self = this;
     var next_page = false;
     var prev_page = false;
     var isPaused;
@@ -16,35 +17,6 @@
         right:  39, // 
         down:   40  // 
     };
-    
-    // Special cases for which the normal finding function doesn't work.
-    var specialCases = {
-        "snowflakescomic" : {
-            "url": "www.snowflakescomic.com",
-            "next_url" : function(){
-                return $('table#comicnav tbody tr td:nth-child(6) a').attr('href');
-            },
-            "prev_url" : function(){
-                return $('table#comicnav tbody tr td:nth-child(5) a').attr('href');
-            }
-        }
-    }
-    
-    function getDomain(url){
-        return url.replace('http://','').replace('https://','').split(/[/?#]/)[0];
-    }
-    
-    function checkIfSpecialCase() {
-        var vreturn = false;
-        $.each( specialCases, function(index, spec){
-            if(spec.url == window.location.host){
-                // We have a special case!
-                vreturn = spec;
-                return false;
-            }
-        });
-        return vreturn;
-    }
 
     function analyse() {
         // Look for links on the current page that contain
@@ -56,31 +28,30 @@
             var cclass  = $(this).attr('class') || '';
             var id      = $(this).attr('id')    || '';
             var title   = $(this).attr('title') || '';
-            var rel     = $(this).attr('rel')   || '';
             var vars = [/[^a-zA-Z0-9]?(back|prev|older)[^g]?/i];
             for(var i = 0; i < vars.length; i++){
                 if(
                     (text.search(vars[i])    != -1 || 
-                    cclass.search(vars[i])   != -1 || 
-                    id.search(vars[i])       != -1 || 
-                    rel.search(vars[i])      != -1 || 
-                    title.search(vars[i])    != -1) &&
+                    cclass.search(vars[i])  != -1 || 
+                    id.search(vars[i])      != -1 || 
+                    title.search(vars[i])   != -1) &&
                     prev_page === false
                 ){
+                    console.log("Found prev: " + href);
                     prev_page = href;
                     break;
                 }
             }
-            var vars = [/[^a-zA-Z0-9]?(next|forward)[s]?/i];
+            var vars = [/[^a-zA-Z0-9]?(next|forward|new|newer|more)[s]?/i];
             for(var i = 0; i < vars.length; i++){
                 if(
                     (text.search(vars[i])    != -1 || 
-                    cclass.search(vars[i])   != -1 || 
-                    id.search(vars[i])       != -1 || 
-                    rel.search(vars[i])      != -1 || 
-                    title.search(vars[i])    != -1) &&
+                    cclass.search(vars[i])  != -1 || 
+                    id.search(vars[i])      != -1 || 
+                    title.search(vars[i])   != -1) &&
                     next_page === false
                 ){
+                    console.log("Found next: " + href);
                     next_page = href;
                     break;
                 }
@@ -103,7 +74,9 @@
             }
         }
         if(prev_page !== false || next_page !== false){
-            setKeypad();
+            document.addEventListener('keydown',function(e){
+                keypad(e);
+            }, false);
         }
         
         return {"current": window.location.href.toString(), "next": next_page, "prev": prev_page};
@@ -132,12 +105,6 @@
             }
         }
     }
-    
-    function setKeypad(){
-        document.addEventListener('keydown',function(e){
-            keypad(e);
-        }, false);
-    }
 
     function getQueryVariable(variable) {
         var query = window.location.search.substring(1);
@@ -154,14 +121,7 @@
     chrome.extension.sendRequest({id: 'isPaused?'}, function(response) {
         isPaused = response.value;
         if(!isPaused) {
-            var specialCase = checkIfSpecialCase();
-            if(specialCase === false){
-                analyse();
-            } else {
-                next_page = specialCase.next_url();
-                prev_page = specialCase.prev_url();
-                setKeypad();
-            }
+            analyse();
         }
     });
 
