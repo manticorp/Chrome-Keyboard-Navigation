@@ -84,7 +84,7 @@
                     break;
                 }
             }
-            var vars = [/[^a-zA-Z0-9]?(next|forward|new|more)[s]?/i];
+            var vars = [/[^a-zA-Z0-9]?(next|forward|newer)[s]?/i];
             for(var i = 0; i < vars.length; i++){
                 if(
                     (text.search(vars[i])    != -1 || 
