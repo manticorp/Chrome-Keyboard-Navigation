@@ -39,6 +39,10 @@
         "wikipedia" :{
             "url": "wikipedia.org",
             "test": function(){return false;}
+        },
+        "facebook" :{
+            "url": "facebook.com",
+            "test": function(){return false;}
         }
     }
     
