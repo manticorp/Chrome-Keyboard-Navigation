@@ -43,6 +43,10 @@
         "facebook" :{
             "url": "facebook.com",
             "test": function(){return false;}
+        },
+        "dreamhost" :{
+            "url" : "dreamhost.com",
+            "test": function(){return false;}
         }
     }
     
@@ -134,8 +138,25 @@
         return {"current": url, "next": next_page, "prev": prev_page};
     }
     
+    /**
+     * Checks if current active element is an input,
+     * i.e the user might want to press the left and right
+     * keys to go left in right in the text they're
+     * currently writing and won't want to navigate!
+     */
+    function checkIfInInput(){
+        var el = document.activeElement;
+        return (
+            el && ( 
+                el.tagName.toLowerCase() == 'input'    || 
+                el.tagName.toLowerCase() == 'textarea' || 
+                el.contentEditable.toLowerCase() == 'true'
+            )
+        );
+    }
+    
     function keypad(e){
-        if(isPaused) return;
+        if(isPaused || checkIfInInput()) return;
         if(e.keyCode == keycodes.left) {
             if(prev_page !== false){
                 window.location.href = prev_page;
@@ -173,7 +194,7 @@
             if(specialCase === false){
                 analyse();
             } else {
-                // Sometimes we need to test for certain things (e.g. if RES is installed)
+                // Sometimes we need to test for certain things
                 if(typeof specialCase.test !== "undefined"){
                     test = specialCase.test();
                 }
