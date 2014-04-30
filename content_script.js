@@ -47,6 +47,26 @@
         "dreamhost" :{
             "url" : "dreamhost.com",
             "test": function(){return false;}
+        },
+        "amazon" :{
+            "url" : "amazon.co.uk",
+            "next_url" : function(){
+                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
+                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn + 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn + 1));
+            },
+            "prev_url" : function(){
+                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
+                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn - 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn - 1));
+            }
+        },
+        "watchtvseries" :{
+            "url" : "watchtvseries",
+            "next_url" : function(){
+                return $('.npbutton.button-next').first().attr('href');
+            },
+            "prev_url" : function(){
+                return $('.npbutton.button-previous').first().attr('href');
+            }
         }
     }
     
