@@ -51,12 +51,47 @@
         "amazon" :{
             "url" : "amazon.co.uk",
             "next_url" : function(){
-                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
-                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn + 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn + 1));
+            	var method1 = /page=([1-9]+[0-9]*)/g.exec(window.location.href);
+            	if(method1 !== null){
+	                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
+	                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn + 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn + 1));
+	            }
+	            var method2 = document.getElementById('pagnNextLink');
+	            if(method2 !== null){
+	            	return method2.href;
+	            }
+	            return null;
             },
             "prev_url" : function(){
-                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
-                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn - 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn - 1));
+            	var method1 = /page=([1-9]+[0-9]*)/g.exec(window.location.href);
+            	if(method1 !== null){
+	                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
+	                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn - 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn - 1));
+	            }
+	            var method2 = document.getElementById('pagnPrevLink');
+	            if(method2 !== null){
+	            	return method2.href;
+	            }
+	            return null;
+            }
+        },
+        "apod" :{
+            "url" : "apod.nasa.gov",
+            "next_url" : function(){
+            	var as = document.body.querySelectorAll('[href^=ap]');
+            	nl = false;
+            	for(var i = 0; i < as.length; i++){ 
+            		if(as[i].textContent === ">") nl = as[i].href;
+            	}
+                return nl;
+            },
+            "prev_url" : function(){
+            	var as = document.body.querySelectorAll('[href^=ap]');
+            	nl = false;
+            	for(var i = 0; i < as.length; i++){ 
+            		if(as[i].textContent === "<") nl = as[i].href;
+            	}
+                return nl;
             }
         },
         "watchtvseries" :{
@@ -66,6 +101,23 @@
             },
             "prev_url" : function(){
                 return $('.npbutton.button-previous').first().attr('href');
+            }
+        },
+        "stackoverflow" :{
+            "url" : function(){
+                var stackSites = ["stackexchange.com","pt.stackoverflow.com","askubuntu.com","stackapps.com","mathoverflow.net","superuser.com","serverfault.com","stackoverflow.com"];
+                for(var i = 0; i < stackSites.length; i++){
+                    if(window.location.host.search(stackSites[i]) != -1){
+                        return true;
+                    }
+                }
+                return false;
+            },
+            "next_url" : function(){
+                return false;
+            },
+            "prev_url" : function(){
+                return false;
             }
         }
     }
@@ -78,13 +130,23 @@
     function checkIfSpecialCase() {
         var vreturn = false;
         $.each( specialCases, function(index, spec){
-            if(window.location.host.search(spec.url) != -1){
+            if(isFunction(spec.url)){
+                if(spec.url() == true) {
+                    vreturn = spec;
+                }
+                return false; // break out of each loop
+            } else if(window.location.host.search(spec.url) != -1){
                 // We have a special case!
                 vreturn = spec;
                 return false; // break out of each loop
             }
         });
         return vreturn;
+    }
+
+    function isFunction(functionToCheck) {
+        var getType = {};
+        return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
     }
 
     function analyse() {
