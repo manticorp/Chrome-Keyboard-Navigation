@@ -40,7 +40,7 @@
         setPaused(!isPaused());
 
         // Reload the current tab.
-        chrome.tabs.update(tab.id, {url: tab.url});
+        // chrome.tabs.update(tab.id, {url: tab.url});
     }
 
     function onMessage(request, sender, sendResponse) {

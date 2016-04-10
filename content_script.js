@@ -1,24 +1,47 @@
 (function() {
     /**
-     * This is a small polyfill to get event listeners to be 
+     * This is a small polyfill to get event listeners to be
      * the same for all browsers.
      */
-    if(!Element.prototype.addEventListener){var oListeners={};function runListeners(oEvent){if(!oEvent){oEvent=window.event}for(var lstId=0,elId=0,oEvtListeners=oListeners[oEvent.type];elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){for(lstId;lstId<oEvtListeners.aEvts[elId].length;lstId++){oEvtListeners.aEvts[elId][lstId].call(this,oEvent)}break}}}Element.prototype.addEventListener=function(sEventType,fListener){if(oListeners.hasOwnProperty(sEventType)){var oEvtListeners=oListeners[sEventType];for(var nElIdx=-1,elId=0;elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){nElIdx=elId;break}}if(nElIdx===-1){oEvtListeners.aEls.push(this);oEvtListeners.aEvts.push([fListener]);this["on"+sEventType]=runListeners}else{var aElListeners=oEvtListeners.aEvts[nElIdx];if(this["on"+sEventType]!==runListeners){aElListeners.splice(0);this["on"+sEventType]=runListeners}for(var lstId=0;lstId<aElListeners.length;lstId++){if(aElListeners[lstId]===fListener){return}}aElListeners.push(fListener)}}else{oListeners[sEventType]={aEls:[this],aEvts:[[fListener]]};this["on"+sEventType]=runListeners}};Element.prototype.removeEventListener=function(sEventType,fListener){if(!oListeners.hasOwnProperty(sEventType)){return}var oEvtListeners=oListeners[sEventType];for(var nElIdx=-1,elId=0;elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){nElIdx=elId;break}}if(nElIdx===-1){return}for(var lstId=0,aElListeners=oEvtListeners.aEvts[nElIdx];lstId<aElListeners.length;lstId++){if(aElListeners[lstId]===fListener){aElListeners.splice(lstId,1)}}}}
+    if(!Element.prototype.addEventListener){var oListeners={};function runListeners(oEvent){if(!oEvent){oEvent=window.event}for(var lstId=0,elId=0,oEvtListeners=oListeners[oEvent.type];elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){for(lstId;lstId<oEvtListeners.aEvts[elId].length;lstId++){oEvtListeners.aEvts[elId][lstId].call(this,oEvent)}break}}}Element.prototype.addEventListener=function(sEventType,fListener){if(oListeners.hasOwnProperty(sEventType)){var oEvtListeners=oListeners[sEventType];for(var nElIdx=-1,elId=0;elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){nElIdx=elId;break}}if(nElIdx===-1){oEvtListeners.aEls.push(this);oEvtListeners.aEvts.push([fListener]);this["on"+sEventType]=runListeners}else{var aElListeners=oEvtListeners.aEvts[nElIdx];if(this["on"+sEventType]!==runListeners){aElListeners.splice(0);this["on"+sEventType]=runListeners}for(var lstId=0;lstId<aElListeners.length;lstId++){if(aElListeners[lstId]===fListener){return}}aElListeners.push(fListener)}}else{oListeners[sEventType]={aEls:[this],aEvts:[[fListener]]};this["on"+sEventType]=runListeners}};Element.prototype.removeEventListener=function(sEventType,fListener){if(!oListeners.hasOwnProperty(sEventType)){return}var oEvtListeners=oListeners[sEventType];for(var nElIdx=-1,elId=0;elId<oEvtListeners.aEls.length;elId++){if(oEvtListeners.aEls[elId]===this){nElIdx=elId;break}}if(nElIdx===-1){return}for(var lstId=0,aElListeners=oEvtListeners.aEvts[nElIdx];lstId<aElListeners.length;lstId++){if(aElListeners[lstId]===fListener){aElListeners.splice(lstId,1)}}}};
 
     var next_page = false;
     var prev_page = false;
     var isPaused;
-    
-    var keycodes = 
+
+    var keycodes =
     {               // The keycodes for up down left and right movement.
         left:   37, // This defaults to the arrow keys, but you could
         up:     38, // just as easily set it to the WASD keys.
-        right:  39, // 
-        down:   40  // 
+        right:  39, //
+        down:   40  //
     };
-    
+
     // Special cases for which the normal finding function doesn't work.
     var specialCases = {
+        "putlocker" : {
+            "url" : "putlocker.is",
+            "next_url" : function() {
+                url = location.toString();
+                matches = url.match(/episode-([0-9]+)/);
+                if(matches !== null) {
+                    nextNum = (matches[1]/1)+1;
+                    url = url.replace(matches[0],'episode-'+((matches[1]/1)+1));
+                    return url;
+                }
+                return false;
+            },
+            "prev_url" : function() {
+                url = location.toString();
+                matches = url.match(/episode-([0-9]+)/);
+                if(matches !== null && (matches[1]/1) > 1) {
+                    nextNum = (matches[1]/1)-1;
+                    url = url.replace(matches[0],'episode-'+((matches[1]/1)+1));
+                    return url;
+                }
+                return false;
+            }
+        },
         "snowflakescomic" : {
             "url": "www.snowflakescomic.com",
             "next_url" : function(){
@@ -53,7 +76,7 @@
             "next_url" : function(){
             	var method1 = /page=([1-9]+[0-9]*)/g.exec(window.location.href);
             	if(method1 !== null){
-	                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
+	                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1], 10);
 	                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn + 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn + 1));
 	            }
 	            var method2 = document.getElementById('pagnNextLink');
@@ -65,7 +88,7 @@
             "prev_url" : function(){
             	var method1 = /page=([1-9]+[0-9]*)/g.exec(window.location.href);
             	if(method1 !== null){
-	                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1]);
+	                var pgn = parseInt(/page=([1-9]+[0-9]*)/g.exec(window.location.href)[1], 10);
 	                return window.location.href.replace(/page=([1-9]+[0-9]*)/g, "page=" + (pgn - 1)).replace(/sr_pg_[0-9]*/g, "sr_pg_" + (pgn - 1));
 	            }
 	            var method2 = document.getElementById('pagnPrevLink');
@@ -80,16 +103,20 @@
             "next_url" : function(){
             	var as = document.body.querySelectorAll('[href^=ap]');
             	nl = false;
-            	for(var i = 0; i < as.length; i++){ 
-            		if(as[i].textContent === ">") nl = as[i].href;
+            	for(var i = 0; i < as.length; i++){
+            		if(as[i].textContent === ">") {
+                        nl = as[i].href;
+                    }
             	}
                 return nl;
             },
             "prev_url" : function(){
             	var as = document.body.querySelectorAll('[href^=ap]');
             	nl = false;
-            	for(var i = 0; i < as.length; i++){ 
-            		if(as[i].textContent === "<") nl = as[i].href;
+            	for(var i = 0; i < as.length; i++){
+            		if(as[i].textContent === "<") {
+                        nl = as[i].href;
+                    }
             	}
                 return nl;
             }
@@ -120,18 +147,18 @@
                 return false;
             }
         }
-    }
-    
+    };
+
     function getDomain(url){
-        return url.replace('http://','').replace('https://','').split(/[/?#]/)[0];
+        return url.replace('http://','').replace('https://','').split(/[\/?#]/)[0];
     }
-    
+
     // Checks if the url is one of the special cases above
     function checkIfSpecialCase() {
         var vreturn = false;
         $.each( specialCases, function(index, spec){
             if(isFunction(spec.url)){
-                if(spec.url() == true) {
+                if(spec.url()) {
                     vreturn = spec;
                 }
                 return false; // break out of each loop
@@ -160,36 +187,39 @@
             var id      = $(this).attr('id')    || '';
             var title   = $(this).attr('title') || '';
             var rel     = $(this).attr('rel')   || '';
-            var vars = [/[^a-zA-Z0-9]?(back|prev|older)[^g]?/i];
-            for(var i = 0; i < vars.length; i++){
+            var backRegex = /[^a-zA-Z0-9]?(back|prev|older)[^g]?/i;
+            var nextRegex = /[^a-zA-Z0-9]?(next|forward|newer)[s]?/i;
+            var i;
+            var vars = [backRegex];
+            for(i = 0; i < vars.length; i++){
                 if(
-                    (text.search(vars[i])    != -1 || 
-                    cclass.search(vars[i])   != -1 || 
-                    id.search(vars[i])       != -1 || 
-                    rel.search(vars[i])      != -1 || 
+                    (text.search(vars[i])    != -1 ||
+                    cclass.search(vars[i])   != -1 ||
+                    id.search(vars[i])       != -1 ||
+                    rel.search(vars[i])      != -1 ||
                     title.search(vars[i])    != -1) &&
                     prev_page === false
-                ){
+                ) {
                     prev_page = href;
                     break;
                 }
             }
-            var vars = [/[^a-zA-Z0-9]?(next|forward|newer)[s]?/i];
-            for(var i = 0; i < vars.length; i++){
+            vars = [nextRegex];
+            for(i = 0; i < vars.length; i++){
                 if(
-                    (text.search(vars[i])    != -1 || 
-                    cclass.search(vars[i])   != -1 || 
-                    id.search(vars[i])       != -1 || 
-                    rel.search(vars[i])      != -1 || 
+                    (text.search(vars[i])    != -1 ||
+                    cclass.search(vars[i])   != -1 ||
+                    id.search(vars[i])       != -1 ||
+                    rel.search(vars[i])      != -1 ||
                     title.search(vars[i])    != -1) &&
                     next_page === false
-                ){
+                ) {
                     next_page = href;
                     break;
                 }
             }
         });
-        
+
         // If there is no link found on the page, look for a page parameter
         // in the URL and increment/decrement it by 1
         if(prev_page !== false && next_page !== false){
@@ -199,27 +229,27 @@
                 if(has_var){
                     var page = getQueryVariable(page_vars[i]);
                     if(isNumber(page)) {
-                        updateUrl(parseInt(page), page_vars[i]);
+                        updateUrl(parseInt(page, 10), page_vars[i]);
                         break;
                     }
                 }
             }
         }
-        
+
         return {"current": window.location.href.toString(), "next": next_page, "prev": prev_page};
     }
-    
+
     function isNumber(n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     }
-    
+
     function updateUrl(page, varname){
         var url = window.location.href.toString();
         next_page = url.replace(varname+"="+page,varname+"="+(page+1));
         prev_page = url.replace(varname+"="+page,varname+"="+(page-1));
         return {"current": url, "next": next_page, "prev": prev_page};
     }
-    
+
     /**
      * Checks if current active element is an input,
      * i.e the user might want to press the left and right
@@ -229,27 +259,31 @@
     function checkIfInInput(){
         var el = document.activeElement;
         return (
-            el && ( 
-                el.tagName.toLowerCase() == 'input'    || 
-                el.tagName.toLowerCase() == 'textarea' || 
+            el && (
+                el.tagName.toLowerCase() == 'input'    ||
+                el.tagName.toLowerCase() == 'textarea' ||
                 el.contentEditable.toLowerCase() == 'true'
             )
         );
     }
-    
+
     function keypad(e){
-        if(isPaused || checkIfInInput()) return;
+        if(checkIfInInput()) return;
         if(e.keyCode == keycodes.left) {
             if(prev_page !== false){
-                window.location.href = prev_page;
+                doIfNotPaused(function() {
+                    window.location.href = prev_page;
+                });
             }
         } else if(e.keyCode == keycodes.right) {
             if(next_page !== false){
-                window.location.href = next_page;
+                doIfNotPaused(function() {
+                    window.location.href = next_page;
+                });
             }
         }
     }
-    
+
     function setKeypad(){
         document.addEventListener('keydown',function(e){
             keypad(e);
@@ -268,30 +302,40 @@
         return false;
     }
 
-    chrome.extension.sendRequest({id: 'isPaused?'}, function(response) {
-        isPaused = response.value;
-        if(!isPaused) {
-            var specialCase = checkIfSpecialCase();
-            var test = true;
-            if(specialCase === false){
+    function doIfNotPaused(callback) {
+        chrome.extension.sendRequest({id: 'isPaused?'}, function(response) {
+            isPaused = response.value;
+            if(!isPaused) {
+                callback();
+            }
+        });
+    }
+
+    function start() {
+        var specialCase = checkIfSpecialCase();
+        var test = true;
+        if(specialCase === false){
+            analyse();
+        } else {
+            // Sometimes we need to test for certain things
+            if(typeof specialCase.test !== "undefined"){
+                test = specialCase.test();
+            }
+            if(test === true){
                 analyse();
-            } else {
-                // Sometimes we need to test for certain things
-                if(typeof specialCase.test !== "undefined"){
-                    test = specialCase.test();
+                if(typeof specialCase.next_url !== "undefined"){
+                    next_page = specialCase.next_url();
                 }
-                if(test === true){
-                    analyse();
-                    if(typeof specialCase.next_url !== "undefined"){
-                        next_page = specialCase.next_url();
-                    }
-                    if(typeof specialCase.prev_url !== "undefined"){
-                        prev_page = specialCase.prev_url();
-                    }
+                if(typeof specialCase.prev_url !== "undefined"){
+                    prev_page = specialCase.prev_url();
                 }
             }
-            if(test === true) setKeypad();
         }
-    });
+        if(test === true) {
+            setKeypad();
+        }
+    }
+
+    start();
 
 })();
