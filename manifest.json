@@ -5,7 +5,7 @@
     "short_name": "Prev/Next Keys",
     "description": "Allows you to navigate any paged website using the left and right keyboard keys.",
     "author": "Harry Mustoe-Playfair",
-    "version": "0.42",
+    "version": "0.43",
     "browser_action": {
     "default_icon": "icon.png",
     "default_title": "Toggle Keyboard Navigation"
